@@ -1,67 +1,91 @@
 # 🎯 AI-Powered Interview Prep System
 
-> Fully local AI — No API keys, No cloud costs, No rate limits.
+> Full-stack interview prep with JWT auth, analytics, PDF reports.
 >
-> **Stack:** Ollama (Mistral LLM) → Flask AI Service → Spring Boot Backend
+> **Stack:** React + Vite (Frontend) → Spring Boot + MySQL (Backend) → Flask + Gemini (AI)
 
 ---
 
 ## 🏗️ Project Structure
 
 ```
-ohiooo/
-├── ai-service/                  ← DAY 1: Flask + Ollama
-│   ├── app.py
-│   └── requirements.txt
+AI_Interview_Prep/
+├── frontend/                    ← React + Vite UI (port 5173)
+│   ├── src/
+│   │   ├── pages/               ← Login, Dashboard, Interview, etc.
+│   │   ├── components/          ← Navbar
+│   │   └── services/api.js      ← Calls backend at /api via Vite proxy
+│   ├── package.json
+│   └── vite.config.js           ← Proxies /api → http://localhost:8080
 │
-└── interview-service/           ← DAY 2: Spring Boot
-    ├── pom.xml
-    └── src/main/
-        ├── java/com/interviewprep/interviewservice/
-        │   ├── InterviewServiceApplication.java
-        │   ├── config/
-        │   │   └── AppConfig.java
-        │   ├── controller/
-        │   │   └── InterviewController.java
-        │   ├── dto/
-        │   │   └── GenerateRequest.java
-        │   ├── entity/
-        │   │   └── InterviewSession.java
-        │   ├── enums/
-        │   │   ├── RoleType.java
-        │   │   └── QuestionType.java
-        │   ├── repository/
-        │   │   └── InterviewSessionRepository.java
-        │   └── service/
-        │       └── AIClientService.java
-        └── resources/
-            └── application.properties
+├── interview-service/           ← Spring Boot (port 8080)
+│   ├── pom.xml
+│   └── src/main/
+│       ├── java/com/interviewprep/interviewservice/
+│       │   ├── InterviewServiceApplication.java
+│       │   ├── config/          ← Security, Password, App config
+│       │   ├── controller/      ← Auth, Session, Dashboard, Report, etc.
+│       │   ├── dto/             ← Request/response DTOs
+│       │   ├── entity/          ← JPA entities
+│       │   ├── enums/           ← Roles, Question types
+│       │   ├── repository/      ← Spring Data repositories
+│       │   └── service/         ← Domain services (AI client, scoring)
+│       └── resources/application.properties
+│
+└── ai-service/                  ← Flask AI (port 5000)
+    ├── app.py                   ← Registers blueprints, CORS, rate limits
+    ├── routes/                  ← subjective, mcq, coding, analytics
+    ├── services/ollama_service.py  ← Gemini-backed LLM calls
+    ├── config.py                ← Env-based config (Gemini)
+    └── requirements.txt
 ```
 
 ---
 
 ## 🚀 How to Run (Full Stack)
 
-### Step 1 – Start Ollama
-```bash
-ollama serve
-# (In another terminal) pull the model if not done yet:
-ollama pull mistral
-```
+### Prerequisites
+- Node.js 18+
+- Python 3.10+
+- Java 17, Maven
+- MySQL 8+ running locally
+- Google Gemini API key (for AI generation)
+- Optional: JDoodle client id/secret (if enabling code execution)
+
+### Step 1 – Configure environment
+- ai-service/.env (create):
+  - GEMINI_API_KEY=your_key
+  - MODEL_NAME=gemini-2.5-flash
+  - RATE_AI_GENERATE=10 per minute
+  - RATE_CODE_EXEC=30 per minute
+  - JD_CLIENT_ID=your_jdoodle_id
+  - JD_CLIENT_SECRET=your_jdoodle_secret
+- interview-service application.properties or environment:
+  - DB_USER, DB_PASS
+  - FLASK_URL=http://localhost:5000
+  - JWT_SECRET, JWT_EXPIRY_MS
 
 ### Step 2 – Start Flask AI Service
 ```bash
 cd ai-service
 pip install -r requirements.txt
 python app.py
-# Runs on http://localhost:5000
+# http://localhost:5000
 ```
 
-### Step 3 – Start Spring Boot
+### Step 3 – Start Spring Boot Backend
 ```bash
 cd interview-service
 mvn spring-boot:run
-# Runs on http://localhost:8080
+# http://localhost:8080
+```
+
+### Step 4 – Start Frontend (Vite)
+```bash
+cd frontend
+npm install
+npm run dev
+# http://localhost:5173  (proxied /api → http://localhost:8080)
 ```
 
 ---
@@ -69,20 +93,43 @@ mvn spring-boot:run
 ## 🧪 API Endpoints
 
 ### Flask AI Service (port 5000)
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET  | `/health` | Health check |
-| POST | `/generate-subjective` | Generate 5 subjective questions |
-| POST | `/generate-mcq` | Generate 5 MCQ questions |
+- GET `/health` – Health check
+- POST `/generate-subjective` – Generate subjective questions
+- POST `/evaluate-subjective` – Evaluate an answer
+- POST `/generate-mcq` – Generate MCQs
+- POST `/evaluate-mcq` – Evaluate MCQ answers
+- POST `/generate-coding` – Generate coding problems (optional)
+- POST `/execute-code` – Execute code via JDoodle (optional)
+- POST `/generate-performance-summary` – Summarize performance
 
 ### Spring Boot (port 8080)
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET  | `/api/interview/health` | Health check |
-| POST | `/api/interview/generate-subjective` | Proxied through Flask → Ollama |
-| POST | `/api/interview/generate-mcq` | Proxied through Flask → Ollama |
+- GET `/api/interview/health` – Health check
+- Auth: POST `/api/auth/register`, POST `/api/auth/login`, GET `/api/auth/validate`
+- Sessions:
+  - POST `/api/session/start`
+  - GET `/api/session/{id}/questions`
+  - POST `/api/session/submit-answer`
+  - POST `/api/session/complete/{id}`
+  - POST `/api/session/{id}/followup`
+  - POST `/api/session/{sid}/questions/{qid}/model-answer`
+- Dashboard:
+  - GET `/api/dashboard/{email}`
+  - GET `/api/dashboard/{email}/recommend/{role}`
+  - GET `/api/dashboard/{email}/wtopics/{sid}`
+  - POST `/api/dashboard/{email}/summary`
+- Skill Profile:
+  - GET `/api/profile/{email}/{role}`
+  - GET `/api/profile/{email}`
+- Leaderboard:
+  - GET `/api/leaderboard`
+  - GET `/api/leaderboard/{role}`
+- Reports:
+  - GET `/api/report/{email}` → PDF download
+- Admin:
+  - GET `/api/admin/users`
+  - GET `/api/admin/analytics`
 
-### Sample Request Body
+### Sample Generate Request (AI service)
 ```json
 {
   "role": "Java Developer",
@@ -94,41 +141,21 @@ mvn spring-boot:run
 
 ## 🎭 Supported Roles
 
-| Role | Subjective | MCQ | Coding |
-|------|-----------|-----|--------|
-| Java Developer | ✅ | ✅ | ✅ |
-| Python Developer | ✅ | ✅ | ✅ |
-| C Programmer | ✅ | ✅ | ✅ |
-| C++ Programmer | ✅ | ✅ | ✅ |
-| DevOps Engineer | ✅ | ✅ | ❌ |
-| QA Engineer | ✅ | ✅ | ❌ |
-| Data Analyst | ✅ | ✅ | ❌ |
-| Web Developer | ✅ | ✅ | ❌ |
+- Java Developer, Python Developer, C/C++, DevOps, QA, Data Analyst, Web Developer
+- Subjective and MCQ generation supported across roles
+- Coding generation/execution optional (requires JDoodle credentials)
 
 ---
 
 ## 🔁 System Flow
 
 ```
-User Request
-    ↓
-Spring Boot :8080  (/api/interview/generate-subjective)
-    ↓
-Flask AI Service :5000  (/generate-subjective)
-    ↓
-Ollama :11434  (mistral model)
-    ↓
-JSON Questions returned up the chain
+Frontend (Vite :5173) → Backend (Spring Boot :8080) → AI Service (Flask :5000) → Gemini
 ```
 
 ---
 
-## 🗄️ H2 Database Console
-
-While Spring Boot is running, access the in-memory DB at:
-```
-http://localhost:8080/h2-console
-JDBC URL: jdbc:h2:mem:interviewdb
-Username: sa
-Password: (empty)
-```
+## 🗄️ Database
+- MySQL JDBC: `jdbc:mysql://localhost:3306/interviewdb`
+- Configure credentials via environment variables `DB_USER`, `DB_PASS`
+- Tables auto-created/updated via `spring.jpa.hibernate.ddl-auto=update`
