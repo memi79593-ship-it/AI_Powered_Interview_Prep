@@ -62,7 +62,9 @@ public class SecurityConfig {
                 registry.addMapping("/**")
                         .allowedOriginPatterns(
                                 "http://localhost:*", // All localhost ports
-                                "http://127.0.0.1:*" // All localhost IP ports
+                                "http://127.0.0.1:*", // All localhost IP ports
+                                "https://*.vercel.app",
+                                "https://*.onrender.com"
                 )
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
