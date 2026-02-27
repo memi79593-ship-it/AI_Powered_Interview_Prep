@@ -1,0 +1,30 @@
+# Node (frontend)
+node_modules/
+.next/
+dist/
+.cache/
+.vercel/
+
+# Python (ai-service)
+.venv/
+venv/
+__pycache__/
+*.pyc
+.env
+.env.local
+
+# Java (interview-service)
+target/
+.idea/
+.project
+.classpath
+.settings/
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Logs
+*.log
+logs/
