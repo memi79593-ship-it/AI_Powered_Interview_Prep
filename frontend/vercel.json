@@ -1,8 +1,0 @@
-{
-  "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "https://interview-service.onrender.com/api/$1"
-    }
-  ]
-}

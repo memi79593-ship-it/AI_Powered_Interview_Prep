@@ -4,7 +4,6 @@ Registers all blueprints, applies rate limiting and CORS globally.
 """
 import logging
 from flask import Flask, jsonify
-import os
 from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -82,5 +81,4 @@ if __name__ == "__main__":
     logger.info("  POST /generate-performance-summary")
     logger.info("  GET  /health")
     logger.info("=" * 60)
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=False)
+    app.run(port=5000, debug=True)
