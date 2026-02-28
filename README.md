@@ -190,29 +190,29 @@ JWT_EXPIRY_MS=86400000  # 24 hours
 ## 📊 User Journey Flow
 
 ```
-1. User Registration/Login
-             ↓
-2. Authentication (JWT Token Generated)
-             ↓
-3. Select Professional Role
-             ↓
-4. Start Interview Session
-             ↓
-5. Backend → Requests AI Generation (Flask)
-             ↓
-6. Flask → Calls Gemini API
-             ↓
-7. Display Questions to User
-             ↓
-8.    Submit Answers
-             ↓
-9. AI Evaluation & Scoring
-             ↓
-10. Store Results in MySQL
-             ↓
-11. Update Dashboard & Leaderboard
-             ↓
-12. Generate PDF Report (Optional)
+                                                    User Registration/Login
+                                                              ↓
+                                             Authentication (JWT Token Generated)
+                                                              ↓
+                                                   Select Professional Role
+                                                              ↓
+                                                   Start Interview Session
+                                                              ↓
+                                         Backend → Requests AI Generation (Flask)
+                                                              ↓
+                                                  Flask → Calls Gemini API
+                                                              ↓
+                                                  Display Questions to User
+                                                              ↓
+                                                        Submit Answers
+                                                              ↓
+                                                   AI Evaluation & Scoring
+                                                              ↓
+                                                    Store Results in MySQL
+                                                              ↓
+                                                 Update Dashboard & Leaderboard
+                                                              ↓
+                                                Generate PDF Report (Optional)
 ```
 
 ---
